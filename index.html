@@ -90,9 +90,10 @@
             background-color: #05a546;
         }
 
-        .login-button:disabled {
+        .login-button.disabled {
             background-color: #cccccc;
             cursor: not-allowed;
+            pointer-events: none;
         }
 
         .line-icon {
@@ -127,7 +128,7 @@
             <p class="card-description">Click the button below to sign in.</p>
         </div>
         <div class="card-content">
-            <a id="login-link" href="#" class="login-button" disabled>
+            <a id="login-link" href="#" class="login-button disabled">
                 <svg class="line-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor">
                     <path d="M448 0H64C28.7 0 0 28.7 0 64v288c0 35.3 28.7 64 64 64h96v84c0 9.8 11.2 15.5 19.1 9.7L304 416h144c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64zM224.2 288H184V144h40.2v144zm-64-144H120v144h40.2V144zm144.2 0H264v144h40.4V144zm63.8 0h-40.2v144h40.2V144z"/>
                 </svg>
@@ -144,9 +145,9 @@
             const errorToast = document.getElementById('error-toast');
 
             // --- Configuration ---
-            // IMPORTANT: Replace these with your actual LINE Login Channel details from .env.local
-            const lineChannelId = process.env.NEXT_PUBLIC_LINE_CHANNEL_ID || 'YOUR_CHANNEL_ID'; // Replace with your Channel ID
-            const lineRedirectUri = process.env.NEXT_PUBLIC_LINE_REDIRECT_URI || 'http://localhost:9002/api/auth/callback/line'; // Replace with your Callback URL
+            // IMPORTANT: Replace these with your actual LINE Login Channel details.
+            const lineChannelId = 'YOUR_CHANNEL_ID'; // Replace with your Channel ID
+            const lineRedirectUri = 'YOUR_CALLBACK_URL'; // Replace with your Callback URL (e.g., http://localhost:9002/api/auth/callback/line)
 
             function generateState() {
                 const array = new Uint8Array(16);
@@ -167,15 +168,13 @@
             if (urlParams.get('error') === 'login_failed') {
                 showToast('An error occurred during authentication. Please try again.');
                 // Clean the URL
-                window.history.replaceState({}, document.title, "/");
+                window.history.replaceState({}, document.title, window.location.pathname);
             }
             
             // Validate configuration
-            if (lineChannelId === 'YOUR_CHANNEL_ID' || !lineRedirectUri) {
-                showToast('LINE login is not configured correctly. Please check your environment variables.');
-                loginLink.setAttribute('disabled', 'true');
-                loginLink.style.pointerEvents = 'none';
-                return;
+            if (lineChannelId === 'YOUR_CHANNEL_ID' || lineRedirectUri === 'YOUR_CALLBACK_URL') {
+                showToast('LINE login is not configured. Please edit index.html to set your Channel ID and Callback URL.');
+                return; // Keep button disabled
             }
 
             // Prepare login URL
@@ -192,9 +191,11 @@
             lineLoginUrl.searchParams.set('bot_prompt', 'aggressive');
 
             loginLink.href = lineLoginUrl.toString();
-            loginLink.removeAttribute('disabled');
+            loginLink.classList.remove('disabled');
         });
     </script>
 
 </body>
 </html>
+
+    
