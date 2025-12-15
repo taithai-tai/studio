@@ -36,8 +36,8 @@ export async function GET(request: NextRequest) {
       grant_type: 'authorization_code',
       code: code,
       redirect_uri: redirect_uri,
-      client_id: process.env.LINE_LOGIN_CHANNEL_ID || '2008685502',
-      client_secret: process.env.LINE_LOGIN_CHANNEL_SECRET || 'ea9752cc09af18ab80328a5ecd7df5f9',
+      client_id: process.env.LINE_LOGIN_CHANNEL_ID!,
+      client_secret: process.env.LINE_LOGIN_CHANNEL_SECRET!,
     });
 
     const tokenRes = await fetch('https://api.line.me/oauth2/v2.1/token', {

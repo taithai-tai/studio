@@ -38,8 +38,18 @@ export function LoginView({ error }: LoginViewProps) {
 
     const lineLoginUrl = new URL('https://access.line.me/oauth2/v2.1/authorize');
     
-    const channelId = process.env.NEXT_PUBLIC_LINE_CHANNEL_ID || '2008685502';
-    const redirectUri = process.env.NEXT_PUBLIC_LINE_REDIRECT_URI || `${window.location.origin}/api/auth/callback/line`;
+    const channelId = process.env.NEXT_PUBLIC_LINE_CHANNEL_ID;
+    const redirectUri = process.env.NEXT_PUBLIC_LINE_REDIRECT_URI;
+
+    if (!channelId || !redirectUri) {
+      console.error("LINE login environment variables are not set.");
+      toast({
+        variant: 'destructive',
+        title: 'Configuration Error',
+        description: 'LINE login is not configured correctly. Please contact support.',
+      });
+      return;
+    }
 
     lineLoginUrl.searchParams.set('response_type', 'code');
     lineLoginUrl.searchParams.set('client_id', channelId);
@@ -49,7 +59,7 @@ export function LoginView({ error }: LoginViewProps) {
     lineLoginUrl.searchParams.set('bot_prompt', 'aggressive');
 
     setLoginUrl(lineLoginUrl.toString());
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     if (error === 'login_failed') {
