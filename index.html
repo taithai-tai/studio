@@ -3,48 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Entry Point</title>
+    <title>LINE Login</title>
     <style>
+        :root {
+            --background: #F4FAF6; /* hsl(138 50% 94%) */
+            --foreground: #0A0A0A; /* hsl(0 0% 3.9%) */
+            --card: #FFFFFF;
+            --primary: #06C755; /* LINE Green */
+            --primary-foreground: #FFFFFF;
+            --muted-foreground: #747474; /* hsl(0 0% 45.1%) */
+            --border: #E5E5E5; /* hsl(0 0% 89.8%) */
+            --radius: 0.5rem;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 0 20px;
+            color: var(--foreground);
+            background-color: var(--background);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
-        .container {
-            border: 1px solid #ddd;
-            padding: 2rem;
-            border-radius: 8px;
-            background-color: #f9f9f9;
+
+        .card {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 380px;
+            margin: 1rem;
+            animation: fade-in 0.5s ease-out;
         }
-        h1 {
-            color: #1a73e8;
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
-        code {
-            background-color: #eee;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
+        .card-header, .card-content, .card-footer {
+            padding: 1.5rem;
+        }
+
+        .card-header {
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .card-description {
+            color: var(--muted-foreground);
+            margin: 0.25rem 0 0;
+        }
+        
+        .card-content {
+            padding-top: 1.5rem;
+        }
+
+        .login-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .login-button:hover {
+            background-color: #05a546;
+        }
+
+        .login-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .line-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #ff4d4f;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            animation: slide-in 0.3s forwards;
+        }
+
+        @keyframes slide-in {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to Your Next.js Project!</h1>
-        <p>This is an <code>index.html</code> file in the root of your project.</p>
-        <p>
-            You are seeing this file because you might have opened the project directly from the file system or from GitHub.
-        </p>
-        <p>
-            However, this is a <strong>Next.js application</strong>. To run it and see the actual website, you need to start a development server.
-        </p>
-        <p>
-            Please refer to the <code>README.md</code> file for instructions on how to install dependencies and run the project locally.
-        </p>
-        <hr>
-        <p>After following the steps, you will be able to view your application by navigating to <code>http://localhost:9002</code> in your browser.</p>
+
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title">Line Login Tester</h1>
+            <p class="card-description">Click the button below to sign in.</p>
+        </div>
+        <div class="card-content">
+            <a id="login-link" href="#" class="login-button" disabled>
+                <svg class="line-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor">
+                    <path d="M448 0H64C28.7 0 0 28.7 0 64v288c0 35.3 28.7 64 64 64h96v84c0 9.8 11.2 15.5 19.1 9.7L304 416h144c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64zM224.2 288H184V144h40.2v144zm-64-144H120v144h40.2V144zm144.2 0H264v144h40.4V144zm63.8 0h-40.2v144h40.2V144z"/>
+                </svg>
+                <span>Login with Line</span>
+            </a>
+        </div>
     </div>
+    
+    <div id="error-toast" class="toast"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginLink = document.getElementById('login-link');
+            const errorToast = document.getElementById('error-toast');
+
+            // --- Configuration ---
+            // IMPORTANT: Replace these with your actual LINE Login Channel details from .env.local
+            const lineChannelId = process.env.NEXT_PUBLIC_LINE_CHANNEL_ID || 'YOUR_CHANNEL_ID'; // Replace with your Channel ID
+            const lineRedirectUri = process.env.NEXT_PUBLIC_LINE_REDIRECT_URI || 'http://localhost:9002/api/auth/callback/line'; // Replace with your Callback URL
+
+            function generateState() {
+                const array = new Uint8Array(16);
+                crypto.getRandomValues(array);
+                return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
+            }
+            
+            function showToast(message) {
+                errorToast.textContent = message;
+                errorToast.style.display = 'block';
+                setTimeout(() => {
+                    errorToast.style.display = 'none';
+                }, 5000);
+            }
+
+            // Check for login errors from the callback redirect
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('error') === 'login_failed') {
+                showToast('An error occurred during authentication. Please try again.');
+                // Clean the URL
+                window.history.replaceState({}, document.title, "/");
+            }
+            
+            // Validate configuration
+            if (lineChannelId === 'YOUR_CHANNEL_ID' || !lineRedirectUri) {
+                showToast('LINE login is not configured correctly. Please check your environment variables.');
+                loginLink.setAttribute('disabled', 'true');
+                loginLink.style.pointerEvents = 'none';
+                return;
+            }
+
+            // Prepare login URL
+            const state = generateState();
+            // Store state in a cookie to verify on callback
+            document.cookie = `line-oauth-state=${state};path=/;max-age=300;samesite=lax`;
+
+            const lineLoginUrl = new URL('https://access.line.me/oauth2/v2.1/authorize');
+            lineLoginUrl.searchParams.set('response_type', 'code');
+            lineLoginUrl.searchParams.set('client_id', lineChannelId);
+            lineLoginUrl.searchParams.set('redirect_uri', lineRedirectUri);
+            lineLoginUrl.searchParams.set('state', state);
+            lineLoginUrl.searchParams.set('scope', 'profile openid');
+            lineLoginUrl.searchParams.set('bot_prompt', 'aggressive');
+
+            loginLink.href = lineLoginUrl.toString();
+            loginLink.removeAttribute('disabled');
+        });
+    </script>
+
 </body>
 </html>
